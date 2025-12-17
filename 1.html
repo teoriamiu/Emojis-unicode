@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Emojis Unicode con Selector de Tono</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  .emoji-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+  .emoji-item, .tone-option {
+    background: none;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .tone-option {font-size: 40px;}
+  .emoji-item {font-size: 48px; width: 64px;}
+
+  #popup {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.5);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  #popup.open { visibility: visible; opacity: 1; }
+
+  #popupContent {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-height: 80%;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+<h1>Emojis Unicode con Selector de Tono</h1>
+<div class="emoji-grid" id="emojiGrid">Cargando emojis...</div>
+
+<div id="popup" role="dialog" aria-modal="true" aria-hidden="true">
+  <div id="popupContent"></div>
+</div>
+
+<script>
+const emojiJsonUrl = "https://cdn.jsdelivr.net/npm/emojibase-data@16.0.3/en/data.json";
+const CACHE_KEY = "emojis_cache_date";
+
+async function loadEmojis() {
+  const grid = document.getElementById("emojiGrid");
+  grid.innerHTML = '';
+
+  try {
+    let emojis;
+    const cached = localStorage.getItem(CACHE_KEY);
+
+    if (cached) {
+      // Leer cache
+      const parsed = JSON.parse(cached);
+      emojis = parsed.data;
+    } else {
+      // Hacer fetch HEAD para obtener última modificación
+      const headRes = await fetch(emojiJsonUrl, { method: 'HEAD' });
+      const lastModified = headRes.headers.get('Last-Modified') || new Date().toISOString();
+
+      // Comprobar si hay cache y fecha coincide
+      const stored = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+      if (stored.lastModified === lastModified) {
+        emojis = stored.data;
+      } else {
+        // Fetch completo
+        const res = await fetch(emojiJsonUrl);
+        emojis = await res.json();
+        localStorage.setItem(CACHE_KEY, JSON.stringify({lastModified, data: emojis}));
+      }
+    }
+
+    const fragment = document.createDocumentFragment();
+    emojis.forEach(emoji => {
+      if (!emoji.emoji) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'emoji-item';
+      btn.textContent = emoji.emoji;
+      btn.title = emoji.annotation || emoji.shortcodes?.[0] || '';
+      if (emoji.skins?.length) btn.onclick = () => openPopup(emoji);
+      fragment.appendChild(btn);
+    });
+    grid.appendChild(fragment);
+
+  } catch (err) {
+    grid.textContent = 'Error cargando emojis.';
+    console.error(err);
+  }
+}
+
+function openPopup(emoji) {
+  const popup = document.getElementById('popup');
+  const content = document.getElementById('popupContent');
+  content.innerHTML = '';
+
+  const mainBtn = document.createElement('button');
+  mainBtn.type = 'button';
+  mainBtn.className = 'tone-option';
+  mainBtn.textContent = emoji.emoji;
+  mainBtn.onclick = () => closePopup();
+  content.appendChild(mainBtn);
+
+  emoji.skins?.forEach(skin => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tone-option';
+    btn.textContent = skin.emoji;
+    btn.onclick = () => closePopup();
+    content.appendChild(btn);
+  });
+
+  popup.setAttribute('aria-hidden', 'false');
+  popup.classList.add('open');
+  mainBtn.focus();
+}
+
+function closePopup() {
+  const popup = document.getElementById('popup');
+  popup.classList.remove('open');
+  popup.setAttribute('aria-hidden', 'true');
+}
+
+// Cerrar popup al tocar fuera o presionar Esc
+document.getElementById('popup').addEventListener('click', e => {
+  if (e.target.id === 'popup') closePopup();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePopup();
+});
+
+loadEmojis();
+</script>
+</body>
+</html>

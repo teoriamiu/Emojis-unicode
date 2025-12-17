@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emojis Unicode</title>
+
+<style>
+body{
+  font-family:sans-serif
+}
+
+button{
+  border:0;
+  background:none;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent
+}
+
+.grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px
+}
+.emoji{
+  font-size:48px
+}
+.tone{
+  font-size:40px
+}
+
+#popup{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:center;
+  background:rgba(0,0,0,.5);
+  opacity:0;
+  pointer-events:none;transition:.2s
+}
+#popup.open{
+  opacity:1;
+  pointer-events:auto
+}
+#content{
+  background:#fff;
+  padding:12px;
+  border-radius:8px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center
+}
+
+h1 {
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+<h1>Emojis Unicode</h1>
+<div id="grid" class="grid">Cargando…</div>
+
+<div id="popup" role="dialog" aria-modal="true">
+  <div id="content"></div>
+</div>
+
+<script>
+const URL="https://cdn.jsdelivr.net/npm/emojibase-data@16.0.3/en/data.json"
+const grid=document.getElementById("grid")
+const popup=document.getElementById("popup")
+const content=document.getElementById("content")
+
+fetch(URL)
+.then(r=>r.json())
+.then(data=>{
+  grid.textContent=""
+  data.forEach(e=>{
+    if(!e.emoji) return
+    const b=document.createElement("button")
+    b.className="emoji"
+    b.textContent=e.emoji
+    b.title=e.annotation||""
+    if(e.skins) b.onclick=()=>open(e)
+    grid.append(b)
+  })
+})
+.catch(()=>grid.textContent="Error cargando emojis")
+
+function open(e){
+  content.innerHTML=""
+  ;[e.emoji,...e.skins.map(s=>s.emoji)].forEach(x=>{
+    const b=document.createElement("button")
+    b.className="tone"
+    b.textContent=x
+    b.onclick=close
+    content.append(b)
+  })
+  popup.classList.add("open")
+}
+
+function close(){ popup.classList.remove("open") }
+
+popup.onclick=e=>e.target===popup&&close()
+</script>
+</body>
+</html>
