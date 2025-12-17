@@ -1,135 +1,62 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Emojis Unicode – Copiar y Pegar Emojis Actualizados</title>
-
-  <!-- SEO -->
-  <meta name="description" content="Listado completo de emojis Unicode para copiar y pegar. Emojis actualizados por categoría: caras, símbolos, objetos, banderas y más.">
-  <meta name="keywords" content="Emojis Unicode, copiar emojis, emojis para copiar y pegar, emojis actualizados, unicode emojis">
-  <meta name="author" content="Agustín Díaz">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://emojis-unicode.netlify.app/">
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Favicon -->
-  <link rel="icon" href="https://i.imgur.com/2DhgLrS.jpeg">
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="Emojis Unicode – Copiar y Pegar">
-  <meta property="og:description" content="Explorá todos los emojis Unicode. Copiá y pegá emojis por categoría en un solo lugar.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://i.imgur.com/2DhgLrS.jpeg">
-  <meta property="og:url" content="https://emojis-unicode.netlify.app/">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Emojis Unicode – Copiar y Pegar">
-  <meta name="twitter:description" content="Listado completo de emojis Unicode listos para copiar y usar.">
-  <meta name="twitter:image" content="https://i.imgur.com/2DhgLrS.jpeg">
-</head>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emojis Unicode – Copiar y Pegar</title>
+<meta name="description" content="Listado completo de emojis Unicode para copiar y pegar.">
+<meta name="author" content="Agustín Díaz">
+<link rel="icon" href="https://i.imgur.com/2DhgLrS.jpeg">
 <style>
-body{
-  font-family:sans-serif
-}
-
-button{
-  border:0;
-  background:none;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent
-}
-
-.grid{
-  display:flex;
-  flex-wrap:wrap;
-  gap:0px
-}
-.emoji{
-  font-size:45px
-}
-.tone{
-  font-size:30px
-}
-
-#popup{
-  position:fixed;
-  inset:0;
-  display:grid;
-  place-items:center;
-  background:rgba(0,0,0,.5);
-  opacity:0;
-  pointer-events:none;transition:.2s
-}
-#popup.open{
-  opacity:1;
-  pointer-events:auto
-}
-#content{
-  background:#fff;
-  padding:12px;
-  border-radius:8px;
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center
-}
-
-h1 {
-  text-align: center;
-}
+body{font-family:sans-serif;margin:0;padding:20px;text-align:center}
+button{border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.grid{display:flex;flex-wrap:wrap;gap:0}
+.emoji{font-size:45px}
+.tone{font-size:30px}
+#popup{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.2s}
+#popup.open{opacity:1;pointer-events:auto}
+#content{background:#fff;padding:12px;border-radius:8px;display:flex;flex-wrap:wrap;justify-content:center}
 </style>
 </head>
-
 <body>
 <h1>Emojis Unicode con selector de tonos</h1>
 <div id="grid" class="grid">Cargando…</div>
-
-<div id="popup" role="dialog" aria-modal="true">
-  <div id="content"></div>
-</div>
-
+<div id="popup"><div id="content"></div></div>
 <script>
-const URL="https://cdn.jsdelivr.net/npm/emojibase-data@16.0.3/en/data.json"
-const grid=document.getElementById("grid")
-const popup=document.getElementById("popup")
-const content=document.getElementById("content")
+const URL="https://cdn.jsdelivr.net/npm/emojibase-data@16.0.3/en/data.json",
+grid=document.getElementById("grid"),
+popup=document.getElementById("popup"),
+content=document.getElementById("content");
 
 fetch(URL)
 .then(r=>r.json())
 .then(data=>{
-  grid.textContent=""
+  grid.textContent="";
   data.forEach(e=>{
-    if(!e.emoji) return
-    const b=document.createElement("button")
-    b.className="emoji"
-    b.textContent=e.emoji
-    b.title=e.annotation||""
-    if(e.skins) b.onclick=()=>open(e)
-    grid.append(b)
-  })
+    if(!e.emoji) return;
+    const b=document.createElement("button");
+    b.className="emoji";
+    b.textContent=e.emoji;
+    b.title=e.annotation||"";
+    if(e.skins) b.onclick=()=>open(e);
+    grid.append(b);
+  });
 })
-.catch(()=>grid.textContent="Error cargando emojis")
+.catch(()=>grid.textContent="Error cargando emojis");
 
 function open(e){
-  content.innerHTML=""
-  ;[e.emoji,...e.skins.map(s=>s.emoji)].forEach(x=>{
-    const b=document.createElement("button")
-    b.className="tone"
-    b.textContent=x
-    b.onclick=close
-    content.append(b)
-  })
-  popup.classList.add("open")
+  content.innerHTML="";
+  [e.emoji,...(e.skins||[]).map(s=>s.emoji)].forEach(x=>{
+    const b=document.createElement("button");
+    b.className="tone";
+    b.textContent=x;
+    b.onclick=close;
+    content.append(b);
+  });
+  popup.classList.add("open");
 }
-
-function close(){ popup.classList.remove("open") }
-
-popup.onclick=e=>e.target===popup&&close()
+function close(){popup.classList.remove("open")}
+popup.onclick=e=>e.target===popup&&close();
 </script>
 </body>
 </html>
